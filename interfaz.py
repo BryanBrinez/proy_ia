@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import filedialog, messagebox
-from PIL import Image, ImageTk
+from PIL import Image, ImageTk, ImageOps
 import algoritmo_busqueda
 import time
 
@@ -46,13 +46,16 @@ def mostrar_matriz(matriz):
     num_filas = len(matriz)
     num_columnas = len(matriz[0])
     
+    # Elimina cualquier imagen existente de Coraje en el cuadro
+    for widget in cuadro.winfo_children():
+        widget.grid_forget()
+    
     # Asigna los valores a las variables globales
     global celda_width
     global celda_height
     celda_width = cuadro_width / num_columnas
     celda_height = cuadro_height / num_filas
-    
-    
+
     for i in range(num_filas):
         for j in range(num_columnas):
             imagen_numero = matriz[i][j]
@@ -61,21 +64,28 @@ def mostrar_matriz(matriz):
             label.image = imagen  # Mantiene una referencia a la imagen
             label.grid(row=i, column=j)
             imagenes_cargadas.append(imagen)  # Agrega la imagen a la lista de referencias
+ # Agrega la imagen a la lista de referencias
 
 def cargar_imagen(numero, width, height):
     # Debes cargar las imágenes correspondientes según el número
     # Por ejemplo, puedes tener una lista de rutas a las imágenes y seleccionar la adecuada
     if numero == 1:
-        imagen = Image.open("images/imagen1.png")
+        imagen = Image.open("images/coraje.png")
     elif numero == 2:
-        imagen = Image.open("images/imagen2.png")
+        imagen = Image.open("images/muriel.png")
     elif numero == 3:
-        imagen = Image.open("images/personaje.png")
+        imagen = Image.open("images/gato.png")
     elif numero == 4:
-        imagen = Image.open("images/destino.png")
+        imagen = Image.open("images/amo_malvado.png")
+    elif numero == 0:
+        imagen = Image.open("images/espacio_blanco.png")
+        imagen = ImageOps.expand(imagen, border=2, fill="black")
+    elif numero == 6:
+        imagen = Image.open("images/pared.png")
     else:
         imagen = Image.open("images/imagen_default.png")
-    
+
+
     # Redimensiona la imagen para que se ajuste al tamaño de la celda
     imagen = imagen.resize((int(width), int(height)))
     
@@ -88,23 +98,29 @@ def resaltar_camino(camino):
     pass
 
 def mover_personaje(camino):
+    if camino is None:
+        messagebox.showinfo("Mensaje", "No se encontró un camino válido.")
+        return
+
     for i in range(1, len(camino)):
         fila_anterior, columna_anterior = camino[i - 1]
         fila_actual, columna_actual = camino[i]
-        
-        # Mueve al personaje en la interfaz gráfica
-        imagen_personaje = cargar_imagen(3, celda_width, celda_height)
-        label_personaje = tk.Label(cuadro, image=imagen_personaje)
-        label_personaje.image = imagen_personaje
-        label_personaje.grid(row=fila_actual, column=columna_actual)
-        
-        # Borra la imagen anterior del personaje
+
+        # Mueve a Coraje en la interfaz gráfica
+        imagen_coraje = cargar_imagen(1, celda_width, celda_height)
+        label_coraje = tk.Label(cuadro, image=imagen_coraje)
+        label_coraje.image = imagen_coraje
+        label_coraje.grid(row=fila_actual, column=columna_actual)
+
+        # Borra la imagen anterior de Coraje
         label_anterior = cuadro.grid_slaves(row=fila_anterior, column=columna_anterior)[0]
         label_anterior.grid_forget()
-        
+
         # Espera un corto tiempo para mostrar el movimiento
         cuadro.update()
         time.sleep(0.5)
+
+
 
 root = tk.Tk()
 root.title("Matriz de Imágenes")
@@ -117,10 +133,6 @@ cuadro_width = 400
 cuadro_height = 300
 cuadro = tk.Frame(root, width=cuadro_width, height=cuadro_height, bd=1, relief="solid")
 cuadro.place(relx=0.5, rely=0.5, anchor="center")
-
-# Definición de la posición del destino
-fila_destino = 2
-columna_destino = 1
 
 cargar_button = tk.Button(root, text="Cargar Matriz desde Archivo", command=cargar_matriz)
 cargar_button.pack(side="right", padx=10, pady=10)
