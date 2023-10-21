@@ -1,7 +1,6 @@
-
 import queue
-
-import queue
+from anytree import Node, RenderTree
+from anytree.exporter import DotExporter
 
 def buscar_camino(matriz):
     # Encuentra la posición de Coraje (1) y Muriel (2)
@@ -22,7 +21,15 @@ def buscar_camino(matriz):
     cost_so_far = {}
     came_from[start] = None
     cost_so_far[start] = 0
-    
+
+    # Crea los nodos para cada posición en la matriz
+    nodos = {}
+    for fila in range(len(matriz)):
+        for columna in range(len(matriz[0])):
+            nodos[(fila, columna)] = Node((fila, columna))
+
+    # Crea el nodo raíz del árbol
+    root = nodos[start]
 
     visited = set()  # Conjunto para realizar un seguimiento de los nodos visitados
 
@@ -37,25 +44,38 @@ def buscar_camino(matriz):
             while current is not None:
                 path.insert(0, current)
                 current = came_from[current]
-                #print(cost_so_far)
-                #cost.insert(0, came_from)
-
-                
 
             print("Camino encontrado:")
             for paso in path:
                 print(f"->{paso}", end=" ")
             print("\nNodos generados:")
+
+            # Recorre el árbol y crea los nodos correspondientes
             for nodo_generado in came_from:
                 costo_acumulado = cost_so_far.get(nodo_generado, "N/A")
                 costo_real = costo_acumulado - (cost_so_far[came_from[nodo_generado]] if came_from[nodo_generado] else 0)
-                print(f"Nodo: {nodo_generado}, Costo Real: {costo_real}, Costo Acumulado: {costo_acumulado}")
+
+                # Usa el objeto Node correspondiente en lugar de la tupla
+                nodo_actual = nodos[nodo_generado]
+                nodo_actual.costo_acumulado = costo_acumulado
+                nodo_actual.costo_real = costo_real
+
+                # Agrega el nodo al árbol
+                nodo_padre = nodos[came_from[nodo_generado]] if came_from[nodo_generado] is not None else None
+                nodo_actual.parent = nodo_padre
+
+                # Define el nombre del nodo para incluir los costos
+                nodo_actual.name = f"{nodo_generado} CR: {costo_real} CA: {costo_acumulado}"
+
+            # Imprime el árbol de búsqueda
+            for pre, fill, node in RenderTree(root):
+                print("%s%s" % (pre, node.name))
             
+
             for asd in path:
                 costo_acumulado = cost_so_far.get(asd)
                 cost.insert(0, costo_acumulado)
 
-            
             return path, cost
 
         visited.add(current)  # Marca el nodo actual como visitado
@@ -68,17 +88,27 @@ def buscar_camino(matriz):
                 continue  # Salta este nodo si ya ha sido visitado
 
             new_cost = cost_so_far[current] + costo
-        
-            #print("Costo nuevo", cost_so_far)
+
             if next not in cost_so_far or new_cost < cost_so_far.get(next):
-                
                 cost_so_far[next] = new_cost
                 priority = new_cost
                 frontier.put((new_cost, next))  # Incluye el nuevo costo acumulado en la cola de prioridad
                 came_from[next] = current
 
+                # Usa el objeto Node correspondiente en lugar de la tupla
+                nodo_actual = nodos[next]
+                nodo_actual.costo_acumulado = new_cost
+                nodo_actual.costo_real = costo
+
+                # Agrega el nodo al árbol
+                nodo_padre = nodos[current]
+                nodo_actual.parent = nodo_padre
     print("No se encontró un camino.")
     return None
+
+
+
+
 
 
 
@@ -131,4 +161,4 @@ matriz = [
     [0, 4, 0, 3, 0, 0, 0, 0],
 ]
 
-buscar_camino(matriz)
+#buscar_camino(matriz)
