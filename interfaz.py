@@ -98,10 +98,43 @@ def cargar_imagen(numero, width, height):
 def mostrar_costo(costo):
     # Actualiza la etiqueta de costo acumulado con el valor proporcionado
     label_costo.config(text=f"Costo Acumulado: {costo}")
+    label_costo.place(relx=0.5, y=30, anchor="center")
 
-def resaltar_camino(camino):
-    # Implementa aquí la lógica para resaltar el camino en la interfaz gráfica
-    pass
+
+def estilizar_costo_label():
+    # Establecer una fuente personalizada y más grande
+    fuente = ("Arial", 14, "bold")
+
+    # Estilo de la etiqueta
+    label_costo["font"] = fuente
+    label_costo["bg"] = "pink"  # Color de fondo rosa claro
+    label_costo["fg"] = "white"  # Color de texto blanco
+    label_costo["padx"] = 20  # Relleno horizontal
+    label_costo["pady"] = 10  # Relleno vertical
+    label_costo["borderwidth"] = 0  # Eliminamos el borde ya que el canvas lo manejará
+
+    # Canvas para el fondo redondeado
+    canvas = tk.Canvas(root, bg="pink", bd=0, highlightthickness=0, relief='ridge')
+    canvas.place(relx=0.5, y=20, anchor="center")
+    # Se asume que el tamaño del canvas es 240x40, pero puedes ajustarlo según tus necesidades
+    canvas.create_rectangle(10, 10, 230, 30, fill="pink", outline="pink", width=2, smooth=True)
+
+    # Colocar la etiqueta de costo en el Canvas
+    label_costo.pack(pady=20)  # Espacio superior e inferior
+    canvas.create_window(120, 20, window=label_costo)
+
+
+
+def obtener_imagen_de_color(width, height, color="#FFD700"):  # Usé un color dorado como ejemplo
+    """Devuelve una imagen de un color específico del tamaño proporcionado."""
+    imagen = Image.new('RGB', (int(width), int(height)), color=color)
+    return ImageTk.PhotoImage(imagen)
+
+def resaltar_camino(fila, columna, color="#FFD700"):  # Usé un color dorado como ejemplo
+    imagen_color = obtener_imagen_de_color(celda_width, celda_height, color)
+    label_color = tk.Label(cuadro, image=imagen_color)
+    label_color.image = imagen_color
+    label_color.grid(row=fila, column=columna)
 
 def mover_personaje(camino,cost):
     if camino is None:
@@ -115,12 +148,15 @@ def mover_personaje(camino,cost):
         fila_anterior, columna_anterior = camino[i - 1]
         fila_actual, columna_actual = camino[i]
 
+        
+
         # Mueve a Coraje en la interfaz gráfica
         imagen_coraje = cargar_imagen(1, celda_width, celda_height)
         label_coraje = tk.Label(cuadro, image=imagen_coraje)
         label_coraje.image = imagen_coraje
         label_coraje.grid(row=fila_actual, column=columna_actual)
 
+        resaltar_camino(fila_anterior, columna_anterior)
         # Borra la imagen anterior de Coraje
         label_anterior = cuadro.grid_slaves(row=fila_anterior, column=columna_anterior)[0]
         label_anterior.grid_forget()
@@ -143,7 +179,7 @@ root = tk.Tk()
 root.title("Matriz de Imágenes")
 
 # Establece un tamaño fijo para la ventana (por ejemplo, 800x400 píxeles)
-root.geometry("800x400")
+root.geometry("800x500")
 
 # Cuadro que indica la ubicación de la matriz (centrado)
 cuadro_width = 400
@@ -152,10 +188,12 @@ cuadro = tk.Frame(root, width=cuadro_width, height=cuadro_height, bd=1, relief="
 cuadro.place(relx=0.5, rely=0.5, anchor="center")
 
 # Etiqueta para mostrar el costo acumulado
-label_costo = tk.Label(root, text="Costo Acumulado: N/A")
-label_costo.pack()
+label_costo = tk.Label(root, text="Costo Acumulado: N/A", padx=20, pady=10) 
+label_costo.place()
+
 
 cargar_button = tk.Button(root, text="Cargar Matriz desde Archivo", command=cargar_matriz)
 cargar_button.pack(side="right", padx=10, pady=10)
+estilizar_costo_label()
 
 root.mainloop()
